@@ -9,21 +9,22 @@ import ru.yandex.practicum.filmorate.eceptions.*;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 
 @Slf4j
 @RestController
 @ResponseBody
 public class UserController {
+    private int id;
 
-    HashSet<User> users = new HashSet<>();
+   private HashSet<User> users = new HashSet<>();
 
     @GetMapping("/users")
-    public HashSet<User> findAllUsers() {
+    public Collection<User> findAllUsers() {
         log.debug("Получен запрос GET. Количество пользователей: " + users.size()) ;
-        return users;
+        return new ArrayList<>(users);
     }
 
     @SneakyThrows
@@ -42,7 +43,7 @@ public class UserController {
         if(user.getBirthday().isAfter(LocalDate.now())){
             throw new UserDateBirthdayException("Дата рождения не может быть в будущем");
         }
-        user.setId(users.size()+1);
+        user.setId(++id);
         users.add(user);
         return user;
     }
@@ -61,7 +62,7 @@ public class UserController {
                     findUser.setBirthday(user.getBirthday());
                     findUser.setEmail(user.getEmail());
                 }else {
-                    throw new UserDontExist("Данного пользователя не существует, невозможно обновить данные");
+                    throw new UserDoesNotExist("Данного пользователя не существует, невозможно обновить данные");
                 }
 
             }

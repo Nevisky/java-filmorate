@@ -2,30 +2,28 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.eceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
-import java.time.chrono.ChronoLocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 @Slf4j
 @RestController
 @ResponseBody
 public class FilmController {
-    HashSet<Film> films = new HashSet<>();
+    private int id;
+    private HashSet<Film> films = new HashSet<>();
 
     @GetMapping("/films")
     public Collection<Film> findAllFilms() {
         log.debug("Получен запрос POST. Количество фильмов {}:",films.size());
-        return films;
+        return new ArrayList<>(films);
     }
 
     @SneakyThrows
@@ -47,7 +45,7 @@ public class FilmController {
         if (films.contains(film)) {
             throw new FilmAlreadyExistException("Фильм уже был добавлен ранее");
         }
-        film.setId(films.size() + 1);
+        film.setId(++id);
         films.add(film);
         return film;
     }
