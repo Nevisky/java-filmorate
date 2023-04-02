@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.eceptions.*;
@@ -27,9 +26,8 @@ public class UserController {
         return new ArrayList<>(users);
     }
 
-    @SneakyThrows
     @PostMapping(value = "/users")
-    public User create(@NotNull @Valid @RequestBody User user) {
+    public User create(@NotNull @Valid @RequestBody User user) throws UsersEmailCondition, UsersLoginCondition, UserDateBirthdayException {
         log.debug("Получен запрос Post " + user) ;
         if(user.getEmail().isBlank() || !user.getEmail().contains("@")){
             throw new UsersEmailCondition("Электронная почта не может быть пустой и должна содержать символ @");
@@ -39,6 +37,7 @@ public class UserController {
         }
         if(user.getName() == null){
             user.setName(user.getLogin());
+            throw new UsersNameCondition("Имя для отображения может быть пустым — в таком случае будет использован логин");
         }
         if(user.getBirthday().isAfter(LocalDate.now())){
             throw new UserDateBirthdayException("Дата рождения не может быть в будущем");
@@ -47,9 +46,8 @@ public class UserController {
         users.add(user);
         return user;
     }
-    @SneakyThrows
     @PutMapping("/users")
-    public User update (@NotNull @Valid @RequestBody User user) {
+    public User update (@NotNull @Valid @RequestBody User user) throws UserDoesNotExist {
         log.debug("Получен запрос PUT" + user) ;
         if(user == null){
             throw new InvalidEmailException("Некорректный user");

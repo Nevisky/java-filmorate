@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.eceptions.*;
@@ -26,7 +25,6 @@ public class FilmController {
         return new ArrayList<>(films);
     }
 
-    @SneakyThrows
     @PostMapping(value = "/films")
     public Film addFilm(@NotNull @Valid @RequestBody Film film) {
         log.debug("Получен запрос POST: " + film);
@@ -50,7 +48,7 @@ public class FilmController {
         return film;
     }
 
-    @SneakyThrows
+
     @PutMapping("/films")
     public Film update(@NotNull @Valid @RequestBody Film film) {
         log.debug("Получен запрос PUT: " + film) ;
