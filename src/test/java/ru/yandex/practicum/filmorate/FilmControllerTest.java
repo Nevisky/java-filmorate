@@ -8,11 +8,16 @@ import ru.yandex.practicum.filmorate.eceptions.FilmDescriptionCouldNotBeMore200S
 import ru.yandex.practicum.filmorate.eceptions.FilmDurationsMustBePositive;
 import ru.yandex.practicum.filmorate.eceptions.FilmNameCouldNotBeEmpty;
 import ru.yandex.practicum.filmorate.eceptions.FilmReleaseDateCouldNotBeEarlyThanCertainDate;
+import ru.yandex.practicum.filmorate.managers.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 
 public class FilmControllerTest {
+    private final InMemoryFilmStorage storage = new InMemoryFilmStorage();
+    private final FilmService service = new FilmService(storage);
+
 
 
     private Film film;
@@ -32,7 +37,8 @@ public class FilmControllerTest {
 
     @Test
     void validateFilmDescription() {
-        FilmController filmController = new FilmController();
+        
+        FilmController filmController = new FilmController(storage,service);
         film.setDescription("Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
@@ -50,8 +56,7 @@ public class FilmControllerTest {
 
     @Test
     void validateNameFilmTest() {
-        FilmController filmController = new FilmController();
-
+        FilmController filmController = new FilmController(storage,service);
         film.setName("");
 
         try {
@@ -65,8 +70,7 @@ public class FilmControllerTest {
 
     @Test
     void validateDurationTest() {
-        FilmController filmController = new FilmController();
-
+        FilmController filmController = new FilmController(storage,service);
         film.setDuration(-100);
 
         try {
@@ -80,8 +84,7 @@ public class FilmControllerTest {
 
     @Test
     void validateReleaseDateTest() {
-        FilmController filmController = new FilmController();
-
+        FilmController filmController = new FilmController(storage,service);
         film.setReleaseDate(LocalDate.of(1666, 6, 6));
         try {
             filmController.addFilm(film);

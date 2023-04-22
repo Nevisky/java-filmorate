@@ -3,18 +3,22 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.controllers.UserController;
-import ru.yandex.practicum.filmorate.eceptions.UserDateBirthdayException;
-import ru.yandex.practicum.filmorate.eceptions.UsersEmailCondition;
-import ru.yandex.practicum.filmorate.eceptions.UsersLoginCondition;
-import ru.yandex.practicum.filmorate.eceptions.UsersNameCondition;
+import ru.yandex.practicum.filmorate.eceptions.*;
+import ru.yandex.practicum.filmorate.managers.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 
 public class UserControllerTest {
-    UserController userController = new UserController();
+    InMemoryUserStorage storage = new InMemoryUserStorage();
+    UserService service = new UserService(storage);
+    @Autowired
+    UserController userController = new UserController(storage,service);
     private User user;
+
 
     @BeforeEach
     void beforeEach() {
@@ -22,8 +26,8 @@ public class UserControllerTest {
     }
 
     @Test
-    void validateNameTest() throws UsersLoginCondition, UsersEmailCondition, UserDateBirthdayException {
-        user.setName(null);
+    void validateNameTest() throws UsersLoginCondition, UsersEmailCondition, UserDateBirthdayException, UsersEmptyEmailCondition, UsersEmptyLoginCondition {
+        user.setName("");
         try {
             userController.create(user);
             Assertions.assertEquals(user.getName(), user.getLogin());
@@ -34,19 +38,44 @@ public class UserControllerTest {
     }
 
     @Test
-    void validateLoginTest() throws UsersEmailCondition, UserDateBirthdayException {
+    void validateEmptyLoginTest() throws UsersEmailCondition, UserDateBirthdayException, UsersEmptyEmailCondition, UsersLoginCondition {
         user.setLogin("");
         try {
             userController.create(user);
             Assertions.fail();
-        } catch (UsersLoginCondition e) {
-            Assertions.assertEquals("Логин не может быть пустым и содержать пробелы", e.getMessage());
+        } catch (UsersEmptyLoginCondition e) {
+            Assertions.assertEquals("Логин не может быть пустым.", e.getMessage());
         }
 
     }
 
     @Test
-    void validateEmailTest() throws UsersLoginCondition, UserDateBirthdayException {
+    void validateSpaceLoginTest() throws UsersEmailCondition, UserDateBirthdayException, UsersEmptyEmailCondition, UsersEmptyLoginCondition {
+        user.setLogin("Login Login");
+        try {
+            userController.create(user);
+            Assertions.fail();
+        } catch (UsersLoginCondition e) {
+            Assertions.assertEquals("Логин не может содержать пробелы.", e.getMessage());
+        }
+
+    }
+
+    @Test
+    void validateEmptyEmailTest() throws UsersLoginCondition, UserDateBirthdayException, UsersEmailCondition, UsersEmptyLoginCondition {
+
+        user.setEmail(" ");
+
+        try {
+            userController.create(user);
+            Assertions.fail();
+        } catch (UsersEmptyEmailCondition e) {
+            Assertions.assertEquals("Электронная почта не может быть пустой.", e.getMessage());
+        }
+    }
+
+    @Test
+    void validateSymbolEmailTest() throws UsersLoginCondition, UserDateBirthdayException, UsersEmptyEmailCondition, UsersEmptyLoginCondition {
 
         user.setEmail("yandex|mail.ru");
 
@@ -54,18 +83,18 @@ public class UserControllerTest {
             userController.create(user);
             Assertions.fail();
         } catch (UsersEmailCondition e) {
-            Assertions.assertEquals("Электронная почта не может быть пустой и должна содержать символ @", e.getMessage());
+            Assertions.assertEquals("Электронная почта должна содержать символ @", e.getMessage());
         }
     }
 
 
     @Test
-    void validateBirthdayTest() throws UsersLoginCondition, UsersEmailCondition {
+    void validateBirthdayTest() throws UsersLoginCondition, UsersEmailCondition, UsersEmptyLoginCondition {
         user.setBirthday(LocalDate.now().plusYears(2));
         try {
             userController.create(user);
             Assertions.fail();
-        } catch (UserDateBirthdayException e) {
+        } catch (UserDateBirthdayException | UsersEmptyEmailCondition e) {
             Assertions.assertEquals("Дата рождения не может быть в будущем", e.getMessage());
         }
     }
