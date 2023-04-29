@@ -24,11 +24,7 @@ public class User {
    private Set<Integer> friends = new HashSet<>();
 
    public int addFriend(int  friendId){
-      if(friends == null){
-         friends = new HashSet<>();
-
-      }
-         friends.add(friendId);
+      friends.add(friendId);
       return friendId;
       }
       public Set<Integer> getFriends(){

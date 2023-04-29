@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.managers;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.eceptions.*;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -10,11 +10,6 @@ import java.time.chrono.ChronoLocalDate;
 import java.util.*;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-
-
-    public List<Film> getListFilms() {
-        return listFilms;
-    }
 
     private final List<Film> listFilms= new ArrayList<>();
     private int id;
@@ -57,7 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         film.setId(++id);
         films.put(film.getId(),film);
-        getListFilms().add(film);
+        listFilms.add(film);
 
     }
 
@@ -66,18 +61,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film == null) {
             throw new InvalidEmailException("Некорректный film");
         } else {
-            for (Film findFilm : films.values()) {
-                if (findFilm.getId().equals(film.getId())) {
-                    findFilm.setId(film.getId());
-                    findFilm.setName(film.getName());
-                    findFilm.setDescription(film.getDescription());
-                    findFilm.setReleaseDate(film.getReleaseDate());
-                    findFilm.setDuration(film.getDuration());
+                if (films.containsKey(film.getId())) {
+                    films.put(film.getId(),film);
                 } else {
                     throw new FilmDoesNotExist("Данного фильма не существует, невозможно обновить данные");
                 }
             }
+        return films.get(film.getId());
         }
-        return findFilm(id);
     }
-}

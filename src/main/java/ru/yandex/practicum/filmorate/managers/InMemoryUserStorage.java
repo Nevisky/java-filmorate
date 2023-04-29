@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.eceptions.*;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -36,9 +36,8 @@ public class InMemoryUserStorage implements UserStorage {
         if(user.getLogin().contains(" ")){
             throw new UsersLoginCondition("Логин не может содержать пробелы.");
         }
-        if(user.getName().isBlank() || user.getName()==null){
+        if(user.getName().isBlank() || user.getName() == null){
             user.setName(user.getLogin());
-            throw new UsersNameCondition("Имя для отображения может быть пустым — в таком случае будет использован логин");
         }
         if(user.getBirthday().isAfter(LocalDate.now())){
             throw new UserDateBirthdayException("Дата рождения не может быть в будущем");
@@ -54,13 +53,8 @@ public class InMemoryUserStorage implements UserStorage {
         if(user == null){
             throw new InvalidEmailException("Некорректный user");
         }else {
-            for(User findUser: users.values()){
-                if(findUser.getId().equals(user.getId())){
-                    findUser.setId(user.getId());
-                    findUser.setName(user.getName());
-                    findUser.setLogin(user.getLogin());
-                    findUser.setBirthday(user.getBirthday());
-                    findUser.setEmail(user.getEmail());
+                if(users.containsKey(user.getId())){
+                    users.put(user.getId(), user);
                 }else {
                     throw new UserDoesNotExist("Данного пользователя не существует, невозможно обновить данные");
                 }
@@ -68,4 +62,3 @@ public class InMemoryUserStorage implements UserStorage {
             }
         }
     }
-}

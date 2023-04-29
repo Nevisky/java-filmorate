@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.eceptions;
+package ru.yandex.practicum.filmorate.exceptions;
 
 public class FilmDurationsMustBePositive extends RuntimeException {
     public FilmDurationsMustBePositive(String msg) {
