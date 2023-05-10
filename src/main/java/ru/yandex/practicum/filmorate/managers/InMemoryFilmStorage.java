@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
 import java.util.*;
-@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final List<Film> listFilms= new ArrayList<>();
@@ -16,6 +15,21 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Map<Integer,Film> getFilms() {
         return films;
+    }
+
+    @Override
+    public Collection<Film> findPopularFilm(Integer count) {
+        return null;
+    }
+
+    @Override
+    public Film addLike(int filmId, int userId) {
+        return null;
+    }
+
+    @Override
+    public Film removeLike(int filmId, int userId) {
+        return null;
     }
 
     private Map<Integer,Film> films = new HashMap<>();
@@ -34,7 +48,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void addFilm(Film film) {
+    public Film addFilm(Film film) {
         if (film.getName().isBlank()) {
             throw new FilmNameCouldNotBeEmpty("Наименование фильма не может быть пустым");
         }
@@ -51,9 +65,9 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new FilmAlreadyExistException("Фильм уже был добавлен ранее");
         }
         film.setId(++id);
-        films.put(film.getId(),film);
-        listFilms.add(film);
 
+        listFilms.add(film);
+        return film;
     }
 
     @Override
@@ -62,7 +76,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new InvalidEmailException("Некорректный film");
         } else {
                 if (films.containsKey(film.getId())) {
-                    films.put(film.getId(),film);
+
                 } else {
                     throw new FilmDoesNotExist("Данного фильма не существует, невозможно обновить данные");
                 }

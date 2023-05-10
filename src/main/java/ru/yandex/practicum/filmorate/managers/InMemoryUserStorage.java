@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.managers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+import org.apache.catalina.realm.UserDatabaseRealm;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
@@ -9,13 +9,55 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.*;
 
-@Component
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
+
     private Integer id = 0;
-    @Autowired
+
     public Map<Integer, User> getUsers() {
         return users;
     }
+
+    @Override
+    public User findUserById(int id) {
+        return users.get(id);
+    }
+
+    @Override
+    public User updateUser(User user) throws UserDoesNotExist {
+        if(user == null){
+            throw new InvalidEmailException("Некорректный user");
+        }else {
+            if(users.containsKey(user.getId())){
+                users.put(user.getId(), user);
+            }else {
+                throw new UserDoesNotExist("Данного пользователя не существует, невозможно обновить данные");
+            }
+
+        }
+        return user;
+    }
+
+    @Override
+    public Collection<User> findListUserFriends(int userId) {
+        return null;
+    }
+
+    @Override
+    public Collection<User> findCommonFriends(int userId, int otherId) {
+        return null;
+    }
+
+    @Override
+    public User addUserFriend(int userId, int friendId) {
+        return null;
+    }
+
+    @Override
+    public User removeUserFriend(int id, int friendId) {
+        return null;
+    }
+
     private final Map<Integer,User> users = new HashMap<>();
     @Override
     public Collection<User> findAllUsers() {
@@ -48,17 +90,4 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
-    @Override
-    public void updateUser(User user) throws UserDoesNotExist {
-        if(user == null){
-            throw new InvalidEmailException("Некорректный user");
-        }else {
-                if(users.containsKey(user.getId())){
-                    users.put(user.getId(), user);
-                }else {
-                    throw new UserDoesNotExist("Данного пользователя не существует, невозможно обновить данные");
-                }
-
-            }
-        }
     }

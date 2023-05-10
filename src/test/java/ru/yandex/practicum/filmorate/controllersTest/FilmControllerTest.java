@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controllersTest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,7 @@ public class FilmControllerTest {
     @Test
     void validateFilmDescription() {
         
-        FilmController filmController = new FilmController(storage,service);
+        FilmController filmController = new FilmController(storage);
         film.setDescription("Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
@@ -56,7 +56,7 @@ public class FilmControllerTest {
 
     @Test
     void validateNameFilmTest() {
-        FilmController filmController = new FilmController(storage,service);
+        FilmController filmController = new FilmController(storage);
         film.setName("");
 
         try {
@@ -70,7 +70,7 @@ public class FilmControllerTest {
 
     @Test
     void validateDurationTest() {
-        FilmController filmController = new FilmController(storage,service);
+        FilmController filmController = new FilmController(storage);
         film.setDuration(-100);
 
         try {
@@ -84,7 +84,7 @@ public class FilmControllerTest {
 
     @Test
     void validateReleaseDateTest() {
-        FilmController filmController = new FilmController(storage,service);
+        FilmController filmController = new FilmController(storage);
         film.setReleaseDate(LocalDate.of(1666, 6, 6));
         try {
             filmController.addFilm(film);

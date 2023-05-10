@@ -6,10 +6,13 @@ public interface FilmStorage {
 
     Collection<Film> findAllFilms();
 
-    void addFilm(Film film);
+    Film addFilm(Film film);
     Film findFilm(int filmId);
     Film updateFilm(Film film);
     Map<Integer,Film> getFilms();
+    Collection <Film> findPopularFilm(Integer count);
+    Film addLike(int filmId, int userId);
+    Film removeLike(int filmId, int userId);
 
 
 

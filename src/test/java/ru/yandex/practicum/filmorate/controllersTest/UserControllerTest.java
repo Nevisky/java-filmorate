@@ -1,10 +1,11 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controllersTest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.controllers.UserController;
+import ru.yandex.practicum.filmorate.dao.UserDbStorageDao;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.managers.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,10 +14,11 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.time.LocalDate;
 
 public class UserControllerTest {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    UserDbStorageDao userDao = new UserDbStorageDao(jdbcTemplate);
     InMemoryUserStorage storage = new InMemoryUserStorage();
     UserService service = new UserService(storage);
-    @Autowired
-    UserController userController = new UserController(storage,service);
+    UserController userController = new UserController(storage);
     private User user;
 
 

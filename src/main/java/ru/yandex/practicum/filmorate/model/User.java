@@ -14,16 +14,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class User {
    private Integer id;
    @Email
-   private  String email;
+   private String email;
    @NonNull
-   private  String login;
+   private String login;
    private String name;
    @DateTimeFormat
    private LocalDate birthday;
    @Builder.Default
    private Set<Integer> friends = new HashSet<>();
 
-   public int addFriend(int  friendId){
+   public int addFriend(int friendId){
       friends.add(friendId);
       return friendId;
       }
@@ -33,6 +33,14 @@ public class User {
       }
       return friends;
       }
+
+   public User(Integer id, String email, @NonNull String login, String name, LocalDate birthday) {
+      this.id = id;
+      this.email = email;
+      this.login = login;
+      this.name = name;
+      this.birthday = birthday;
+   }
 
    public void removeFriend(int friendId){
       friends.remove(friendId);
