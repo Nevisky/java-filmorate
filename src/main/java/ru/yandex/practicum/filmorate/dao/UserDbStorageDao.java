@@ -67,7 +67,7 @@ public class UserDbStorageDao implements UserStorage {
             return new User(
                     userRow.getInt("USER_ID"),
                     Objects.requireNonNull(userRow.getString("USER_EMAIL")),
-                    userRow.getString("USER_LOGIN"),
+                    Objects.requireNonNull(userRow.getString("USER_LOGIN")),
                     userRow.getString("USER_NAME"),
                     Objects.requireNonNull(userRow.getDate("USER_BIRTHDAY")).toLocalDate());
         } else {

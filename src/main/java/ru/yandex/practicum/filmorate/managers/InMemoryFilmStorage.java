@@ -1,6 +1,4 @@
 package ru.yandex.practicum.filmorate.managers;
-
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;

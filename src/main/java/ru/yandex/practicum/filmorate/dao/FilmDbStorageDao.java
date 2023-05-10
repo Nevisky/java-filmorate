@@ -201,7 +201,7 @@ public class FilmDbStorageDao implements FilmStorage {
                     .id(filmRow.getInt("FILM_ID"))
                     .name(filmRow.getString("FILM_NAME"))
                     .description((filmRow.getString("FILM_DESCRIPTION")))
-                    .releaseDate(filmRow.getDate("FILM_RELEASE_DATE").toLocalDate())
+                    .releaseDate(Objects.requireNonNull(filmRow.getDate("FILM_RELEASE_DATE")).toLocalDate())
                     .duration(filmRow.getInt("FILM_DURATION"))
                     .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING")).build()).genres(film.getGenres()).build();
             updateGenre(update, update.getId());
@@ -244,7 +244,7 @@ public class FilmDbStorageDao implements FilmStorage {
                     .id(filmRow.getInt("FILM_ID"))
                     .name(filmRow.getString("FILM_NAME"))
                     .description((filmRow.getString("FILM_DESCRIPTION")))
-                    .releaseDate(filmRow.getDate("FILM_RELEASE_DATE").toLocalDate())
+                    .releaseDate(Objects.requireNonNull(filmRow.getDate("FILM_RELEASE_DATE")).toLocalDate())
                     .duration(filmRow.getInt("FILM_DURATION"))
                     .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING")).build())
                     .genres(Collections.singleton(Genre.builder().id(filmRow.getInt("GENRE_ID"))

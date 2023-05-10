@@ -10,7 +10,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
