@@ -1,24 +1,29 @@
 package ru.yandex.practicum.filmorate.controllersTest;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controllers.FilmController;
+import ru.yandex.practicum.filmorate.dao.FilmDbStorageDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmDescriptionCouldNotBeMore200Symbols;
 import ru.yandex.practicum.filmorate.exceptions.FilmDurationsMustBePositive;
 import ru.yandex.practicum.filmorate.exceptions.FilmNameCouldNotBeEmpty;
 import ru.yandex.practicum.filmorate.exceptions.FilmReleaseDateCouldNotBeEarlyThanCertainDate;
-import ru.yandex.practicum.filmorate.managers.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+
 
 import java.time.LocalDate;
-
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTest {
-    private final InMemoryFilmStorage storage = new InMemoryFilmStorage();
-    private final FilmService service = new FilmService(storage);
-
-
+    private final FilmDbStorageDao filmDbStorage;
 
     private Film film;
 
@@ -38,7 +43,7 @@ public class FilmControllerTest {
     @Test
     void validateFilmDescription() {
         
-        FilmController filmController = new FilmController(storage);
+        FilmController filmController = new FilmController(filmDbStorage);
         film.setDescription("Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
                 "Превышение количества символов/Превышение количества символов/Превышение количества символов/Превышение количества символов/" +
@@ -56,7 +61,7 @@ public class FilmControllerTest {
 
     @Test
     void validateNameFilmTest() {
-        FilmController filmController = new FilmController(storage);
+        FilmController filmController = new FilmController(filmDbStorage);
         film.setName("");
 
         try {
@@ -70,7 +75,7 @@ public class FilmControllerTest {
 
     @Test
     void validateDurationTest() {
-        FilmController filmController = new FilmController(storage);
+        FilmController filmController = new FilmController(filmDbStorage);
         film.setDuration(-100);
 
         try {
@@ -84,7 +89,7 @@ public class FilmControllerTest {
 
     @Test
     void validateReleaseDateTest() {
-        FilmController filmController = new FilmController(storage);
+        FilmController filmController = new FilmController(filmDbStorage);
         film.setReleaseDate(LocalDate.of(1666, 6, 6));
         try {
             filmController.addFilm(film);

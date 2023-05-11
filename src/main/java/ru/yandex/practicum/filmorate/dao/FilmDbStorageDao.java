@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,9 @@ import ru.yandex.practicum.filmorate.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.chrono.ChronoLocalDate;
 import java.util.*;
@@ -24,73 +28,17 @@ public class FilmDbStorageDao implements FilmStorage {
     @Override
     public Collection<Film> findAllFilms() {
         Collection<Film> films = new ArrayList<>();
-        Film film;
-        String sql = "SELECT FILMS.FILM_ID, film_name," +
-                " film_description, film_release_date," +
-                " film_duration,ID_FILM_RATING,NAME_RATING,G.GENRE_ID,GENRE_NAME " +
-                "FROM PUBLIC.FILMS " +
-                "LEFT join PUBLIC.FILM_RATING FR on FILMS.FILM_ID = FR.FILM_ID " +
-                "LEFT join PUBLIC.RATING R on R.RATING_ID = FR.ID_FILM_RATING " +
-                "LEFT JOIN PUBLIC.FILM_GENRE FG on FILMS.FILM_ID = FG.FILM_ID " +
-                "LEFT JOIN PUBLIC.GENRE G on G.GENRE_ID = FG.GENRE_ID";
+
+        String sql = "SELECT FILMS.FILM_ID " +
+                "FROM PUBLIC.FILMS";
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(sql);
         while (filmRow.next()) {
-
-                    film =  Film.builder().id(
-                                    filmRow.getInt("FILM_ID"))
-                            .name(
-                                    Objects.requireNonNull(filmRow.getString("FILM_NAME")))
-                            .description(
-                                    Objects.requireNonNull(filmRow.getString("FILM_DESCRIPTION")))
-                            .releaseDate(
-                                    Objects.requireNonNull(filmRow.getDate("FILM_RELEASE_DATE")).toLocalDate())
-                            .duration(
-                                    filmRow.getInt("FILM_DURATION"))
-                            .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING"))
-                                    .name(filmRow.getString("NAME_RATING")).build())
-                            .genres(Collections.singleton(Genre.builder().id(filmRow.getInt("GENRE_ID"))
-                                    .name(filmRow.getString("GENRE_NAME")).build())).build();
-                        films.add(film);
-                        updateGenre(film, film.getId());
+            films.add(findFilm(filmRow.getInt("FILM_ID")));
         }
         return films;
-    }
-
-    private void updateGenre(Film film, int filmId) {
-        String sqlDel = "DELETE FROM FILM_GENRE " +
-                "           WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlDel, film.getId());
-        if (film.getGenres() == null) {
-            String sqlDelete = "DELETE FROM FILM_GENRE " +
-                                "WHERE FILM_ID = ?";
-            jdbcTemplate.update(sqlDelete, filmId);
-            film.setGenres(Collections.emptySet());
-        } else if (film.getGenres().isEmpty()) {
-            film.setGenres(Collections.emptySet());
-    } else {
-            List<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
-            for(Integer e : genreIds){
-                if(e == 0){
-                    String sqlDelete = "DELETE FROM FILM_GENRE " +
-                                        "WHERE FILM_ID = ? ";
-                    jdbcTemplate.update(sqlDelete, film.getId());
-                    film.setGenres(Collections.emptySet());
-                    return;
-                }
-            }
-            for(Integer e : genreIds) {
-                String sqlInsert = "INSERT INTO PUBLIC.FILM_GENRE (film_id, genre_id) " +
-                        "           VALUES (?,?)";
-                jdbcTemplate.update(sqlInsert, filmId, e);
-
-            }
-
-        }
-
 
     }
-
-    @Override
+            @Override
     public Film addFilm(Film film) {
         if (film.getName().isBlank()) {
             throw new FilmNameCouldNotBeEmpty("Наименование фильма не может быть пустым");
@@ -157,22 +105,10 @@ public class FilmDbStorageDao implements FilmStorage {
                             filmRow.getInt("FILM_DURATION"))
                       .likes(setLikes(filmId))
                     .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING")).name(filmRow.getString("NAME_RATING")).build())
-                     .build();
+                     .genres(createListGenres(filmRow.getInt("FILM_ID"))).build();
         } else {
             throw new FilmDoesNotExist("Фильм не найден");
         }
-        String genreList = "SELECT FILM_ID,G.GENRE_ID,GENRE_NAME " +
-                "FROM PUBLIC.FILM_GENRE " +
-                "LEFT JOIN PUBLIC.GENRE G on FILM_GENRE.GENRE_ID = G.GENRE_ID  " +
-                "WHERE FILM_ID =? " +
-                "ORDER BY GENRE_ID ASC";
-        SqlRowSet genres = jdbcTemplate.queryForRowSet(genreList,filmId);
-        Set<Genre> filmGenres = new HashSet<>();
-        while (genres.next()) {
-            filmGenres.add(new Genre(genres.getInt("GENRE_ID"), (genres.getString("GENRE_NAME"))));
-        }
-        findedFilm.setGenres(filmGenres);
-
         return findedFilm;
     }
 
@@ -210,20 +146,52 @@ public class FilmDbStorageDao implements FilmStorage {
             log.error("Фильм с id {} не найден.", film.getId());
             throw new FilmDoesNotExist("Данного фильма не существует, невозможно обновить данные");
         }
+        return update;
+    }
+    private Set<Genre> createListGenres(int filmId) {
         String genreSet = "SELECT FILM_ID,G.GENRE_ID,GENRE_NAME " +
                 "FROM PUBLIC.FILM_GENRE " +
                 "LEFT JOIN PUBLIC.GENRE G on FILM_GENRE.GENRE_ID = G.GENRE_ID " +
                 "WHERE FILM_ID =? " +
                 "ORDER BY GENRE_ID ASC";
 
-        SqlRowSet genres = jdbcTemplate.queryForRowSet(genreSet,film.getId());
+        SqlRowSet genres = jdbcTemplate.queryForRowSet(genreSet,filmId);
         Set<Genre> filmGenres = new HashSet<>();
         while (genres.next()) {
             filmGenres.add(new Genre(genres.getInt("GENRE_ID"), (genres.getString("GENRE_NAME"))));
         }
-        update.setGenres(filmGenres);
+        return filmGenres;
+    }
 
-        return update;
+    public void addGenresInDb(Film film) {
+        List<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
+        jdbcTemplate.batchUpdate("INSERT INTO PUBLIC.FILM_GENRE (film_id, genre_id) VALUES (?,?)", new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                preparedStatement.setInt(1, film.getId());
+                preparedStatement.setInt(2, genreIds.get(i));
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genreIds.size();
+            }
+        });
+    }
+
+    private void updateGenre(Film film, int filmId) {
+        String sqlDel = "DELETE FROM FILM_GENRE " +
+                "           WHERE FILM_ID = ?";
+        jdbcTemplate.update(sqlDel, film.getId());
+        if (film.getGenres() == null) {
+            jdbcTemplate.update(sqlDel, filmId);
+            film.setGenres(Collections.emptySet());
+        } else if (film.getGenres().isEmpty()) {
+            film.setGenres(Collections.emptySet());
+        } else {
+            addGenresInDb(film);
+            film.setGenres(createListGenres(filmId));
+        }
     }
 
 
@@ -249,7 +217,6 @@ public class FilmDbStorageDao implements FilmStorage {
                     .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING")).build())
                     .genres(Collections.singleton(Genre.builder().id(filmRow.getInt("GENRE_ID"))
                             .name(filmRow.getString("GENRE_NAME")).build())).build();
-
             updateGenre(film,film.getId());
             filmsList.put(filmRow.getInt("FILM_ID"),film);
 
@@ -291,10 +258,6 @@ public class FilmDbStorageDao implements FilmStorage {
                            .likes(setLikes(filmRow.getInt("FILM_ID")))
                             .mpa(Mpa.builder().id(filmRow.getInt("ID_FILM_RATING"))
                                     .name(filmRow.getString("NAME_RATING")).build()).build();
-
-            Set<Genre> filmGenres = new HashSet<>();
-            filmGenres.add(new Genre(filmRow.getInt("GENRE_ID"), (filmRow.getString("GENRE_NAME"))));
-            film.setGenres(filmGenres);
             updateGenre(film, film.getId());
             popularFilms.add(film);
         }
